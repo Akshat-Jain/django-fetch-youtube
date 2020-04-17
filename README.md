@@ -81,14 +81,14 @@ The project will be available at **127.0.0.1:8000**.
 
 There are 3 endpoints in the project:
 1. **`/admin`:** This allows user to login with the admin credentials and manage the project. The user can view the tables of the database and can also edit them directly in the provided interface.
-2. **`/youtube/startFetching`:** This endpoint triggers a background asynchronorous job to fetch videos. This endpoint also supports an optional query parameter to take the search query:
+2. **`/youtube/startFetching`:** This endpoint triggers a background asynchronorous job to fetch information of videos. This endpoint also supports an optional query parameter to take the search query:
 ```
 http://localhost:8000/youtube/startFetching?searchQuery=Cricket
 http://localhost:8000/youtube/startFetching?searchQuery=Westeros
 ```
 The `searchQuery` is optional and defaults to `Game of Thrones` if not provided.
 
-3. **`/youtube`:** This endpoint returns the stored video data in a paginated response sorted in descending order of published datetime. This endpoint also supports a query parameter to facilitation pagination as following:
+3. **`/youtube`:** This endpoint returns the stored video data in a paginated response sorted in descending order of published datetime. This endpoint also supports a query parameter to facilitate pagination as following:
 
 ```
 http://localhost:8000/youtube/?page=1
@@ -102,9 +102,9 @@ You can find the demonstration of each of these in the [Demonstration](#video-de
 
 ## Key Features
 
-1. Information about YouTube videos is being fetch asynchronously as a background task on regular intervals (10 seconds as per the current implementation).
-2. Pagination Support with latest published videos shown first.
-3. Stores Video ID, Title, Description, Publishing Datetime and Thumbnails URLs in the database with indexing done on `Publishing Datetime` column for faster access.
+1. Information about YouTube videos is being fetched asynchronously as a background task on regular intervals (10 seconds as per the current implementation).
+2. Pagination support with latest published videos shown first.
+3. Stores Video ID, Title, Description, Publishing Datetime and Thumbnails URLs in the database with indexing done on `Publishing Datetime` column in reverse chronological ordering for faster access.
 4. Support for supplying multiple API keys so that if quota is exhausted on one, it automatically uses the next available key.
 5. Renders the response in a custom implemented template.
 

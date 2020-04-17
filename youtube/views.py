@@ -4,7 +4,6 @@ from django.http import HttpResponse, JsonResponse
 from .models import YoutubeMetadata
 import json
 import requests
-import dateutil.parser
 from django.core.paginator import Paginator
 import time
 from threading import Thread
@@ -37,7 +36,10 @@ def index(request):
     # 10 responses in 1 page
     pageSize = 10
     paginator = Paginator(response,pageSize)
-    page = request.GET.get('page')
+
+    # Get page parameter from query and render that particular page
+    # Defaults to the 1st page
+    page = request.GET.get('page', 1)
     finalResponse = paginator.get_page(page)
     template = loader.get_template('youtube/index.html')
     return HttpResponse(template.render({'data': finalResponse}, request))
@@ -87,6 +89,7 @@ def fetchVideos(searchQuery):
             dbRow.thumbnailUrl = i['snippet']['thumbnails']['default']['url']
             dbRow.save()
         time.sleep(10)
+
 
 # This function corresponds to the endpoint /youtube/startFetching
 # and triggers a background asynchronous job to fetch videos
