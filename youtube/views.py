@@ -25,6 +25,7 @@ def index(request):
         response.append(entry)
 
         dbRow = YoutubeMetadata()
+        dbRow.videoId = i['id']['videoId']
         dbRow.title = entry['title']
         dbRow.description = entry['description']
         dbRow.publishTimestamp = str(dateutil.parser.parse(entry['publishedTimestamp']))
@@ -43,7 +44,7 @@ def fetchVideos():
     queryArguments = {
     'order':'date',
     'part':'snippet',
-    'maxResults': 25, # Values must be within the range: [0, 50] as per their API design
+    'maxResults': 25, # Values must be within the range: [0, 50] as per YouTube Data API design
     'publishedAfter':'2000-04-04T15:51:12.000Z',
     'q':'Game of Thrones',
     'type':'video',
