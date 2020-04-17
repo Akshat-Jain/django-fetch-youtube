@@ -10,17 +10,8 @@ import time
 from threading import Thread
 
 def index(request):
-    # fetchVideos()
-    # t=1
-    # data = fetchVideos(t)
-    # while('items' not in data):
-    #     t=t+1
-    #     data = fetchVideos(t)
-    #     if(data==None):
-    #         return HttpResponse("None of the supplied API Keys work.")
-    # startFetching()
     response = []
-    data = YoutubeMetadata.objects.all()
+    data = YoutubeMetadata.objects.all().order_by('-publishTimestamp')
     for i in data:
         entry = {}
         entry['title'] = i.title
@@ -36,13 +27,6 @@ def index(request):
     return HttpResponse(template.render({'data': finalResponse}, request))
 
 def fetchVideos():
-    # lol=1
-    # while(True):
-    #     print(lol)
-    #     time.sleep(3)
-    #     lol = lol + 1
-    #     if(lol==5):
-    #         break
     json_data = open('./keys.json')
     secret_keys = json.load(json_data)
 
@@ -57,7 +41,7 @@ def fetchVideos():
             queryArguments = {
             'order': 'date',
             'part': 'snippet',
-            'maxResults': 25, # Values must be within the range: [0, 50] as per YouTube Data API design
+            'maxResults': 5, # Values must be within the range: [0, 50] as per YouTube Data API design
             'publishedAfter': '2000-04-04T15:51:12.000Z',
             'q': 'Game of Thrones',
             'type': 'video',
