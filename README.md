@@ -103,7 +103,7 @@ You can find the demonstration of each of these in the [Demonstration](#video-de
 
 ## Video Demonstration
 
-WIP. Will update it soon.
+![](demo.gif)
 
 ## References
 
