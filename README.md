@@ -97,9 +97,10 @@ You can find the demonstration of each of these in the [Demonstration](#video-de
 ## Key Features
 
 1. Information about YouTube videos is being fetch asynchronously as a background task on regular intervals (10 seconds as per the current implementation).
-2. Pagination Support with latest published videos shown first
+2. Pagination Support with latest published videos shown first.
 3. Stores Video ID, Title, Description, Publishing Datetime and Thumbnails URLs in the database with indexing done on `Publishing Datetime` column for faster access.
 4. Support for supplying multiple API keys so that if quota is exhausted on one, it automatically uses the next available key.
+5. Renders the response in a custom implemented template.
 
 ## Video Demonstration
 
