@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.template import loader
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import YoutubeMetadata
 import json
 import requests
@@ -41,7 +41,7 @@ def fetchVideos():
             queryArguments = {
             'order': 'date',
             'part': 'snippet',
-            'maxResults': 5, # Values must be within the range: [0, 50] as per YouTube Data API design
+            'maxResults': 25, # Values must be within the range: [0, 50] as per YouTube Data API design
             'publishedAfter': '2000-04-04T15:51:12.000Z',
             'q': 'Game of Thrones',
             'type': 'video',
@@ -66,4 +66,8 @@ def fetchVideos():
 def startFetching(request):
     process = Thread(target=fetchVideos)
     process.start()
-    return HttpResponse("A background asynchronorous job to fetch videos has been triggered.")
+    response = {
+        "success": True,
+        "message": "A background asynchronorous job to fetch videos has been triggered."
+    }
+    return JsonResponse(response)
