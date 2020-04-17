@@ -35,17 +35,19 @@ def index(request):
     paginator = Paginator(response,10)
     page = request.GET.get('page')
     finalResponse = paginator.get_page(page)
-    return HttpResponse(finalResponse)
+    # return HttpResponse(finalResponse)
+    template = loader.get_template('youtube/index.html')
+    return HttpResponse(template.render({'data': finalResponse}, request))
 
 def fetchVideos():
     queryArguments = {
     'order':'date',
     'part':'snippet',
-    'maxResults': 50, # Values must be within the range: [0, 50] as per their API design
+    'maxResults': 25, # Values must be within the range: [0, 50] as per their API design
     'publishedAfter':'2000-04-04T15:51:12.000Z',
-    'q':'cricket',
+    'q':'Game of Thrones',
     'type':'video',
-    'key':'AIzaSyAitzsrJ99oB7zwAHqdPb60RhAqwSVDGro'
+    'key':'AIzaSyAlt-If_97q82M36V6qjYHxaZuX01RmulQ'
     }
     url = 'https://content.googleapis.com/youtube/v3/search'
     r = requests.get(url,params=queryArguments)
