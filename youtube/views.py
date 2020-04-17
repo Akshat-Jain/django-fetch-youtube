@@ -7,17 +7,20 @@ import requests
 import dateutil.parser
 from django.core.paginator import Paginator
 
-# Create your views here.
 def index(request):
 
-    data = fetchVideos()
+    t=1
+    data = fetchVideos(t)
+    while('items' not in data):
+        t=t+1
+        data = fetchVideos(t)
+        if(data==None):
+            return HttpResponse("None of the supplied API Keys work.")
 
-    # data = YoutubeMetadata.objects.all()
     response = []
     
     for i in data['items']:
         entry = {}
-        # entry['avds'] = str(i.publishTimestamp)
         entry['title'] = i['snippet']['title']
         entry['description'] = i['snippet']['description']
         entry['publishedTimestamp'] = str(i['snippet']['publishedAt'])
@@ -36,19 +39,27 @@ def index(request):
     paginator = Paginator(response,10)
     page = request.GET.get('page')
     finalResponse = paginator.get_page(page)
-    # return HttpResponse(finalResponse)
     template = loader.get_template('youtube/index.html')
     return HttpResponse(template.render({'data': finalResponse}, request))
 
-def fetchVideos():
+def fetchVideos(t):
+
+    json_data = open('./keys.json')
+    secret_keys = json.load(json_data)
+
+    if('key' + str(t) in secret_keys['YOUTUBE_DATA_API_KEYS']):
+        api_key = secret_keys['YOUTUBE_DATA_API_KEYS']['key' + str(t)]
+    else:
+        return None
+
     queryArguments = {
-    'order':'date',
-    'part':'snippet',
+    'order': 'date',
+    'part': 'snippet',
     'maxResults': 25, # Values must be within the range: [0, 50] as per YouTube Data API design
-    'publishedAfter':'2000-04-04T15:51:12.000Z',
-    'q':'Game of Thrones',
-    'type':'video',
-    'key':'AIzaSyAlt-If_97q82M36V6qjYHxaZuX01RmulQ'
+    'publishedAfter': '2000-04-04T15:51:12.000Z',
+    'q': 'Game of Thrones',
+    'type': 'video',
+    'key': api_key
     }
     url = 'https://content.googleapis.com/youtube/v3/search'
     r = requests.get(url,params=queryArguments)
