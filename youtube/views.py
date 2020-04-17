@@ -5,6 +5,7 @@ from .models import YoutubeMetadata
 import json
 import requests
 import dateutil.parser
+from django.core.paginator import Paginator
 
 # Create your views here.
 def index(request):
@@ -29,18 +30,18 @@ def index(request):
         dbRow.publishTimestamp = str(dateutil.parser.parse(entry['publishedTimestamp']))
         dbRow.thumbnailUrl = entry['thumbnailUrl']
         dbRow.save()
-        # print('dbrow.dbRow.publishedTimestamp ' + str(dbRow.publishTimestamp))
-        # print('entry[publishedTimestamp] = ' + entry['publishedTimestamp'])
-        # print('dateutil Timestamp = ' + str(dateutil.parser.parse(entry['publishedTimestamp'])))
     
     res = json.dumps(response)
-    return HttpResponse(res)
+    paginator = Paginator(response,10)
+    page = request.GET.get('page')
+    finalResponse = paginator.get_page(page)
+    return HttpResponse(finalResponse)
 
 def fetchVideos():
     queryArguments = {
     'order':'date',
     'part':'snippet',
-    'maxResults': 5,
+    'maxResults': 50, # Values must be within the range: [0, 50] as per their API design
     'publishedAfter':'2000-04-04T15:51:12.000Z',
     'q':'cricket',
     'type':'video',
@@ -50,5 +51,3 @@ def fetchVideos():
     r = requests.get(url,params=queryArguments)
     data = r.json()
     return data
-# def backgroundTask(response):
-#   return json.dumps(response)
