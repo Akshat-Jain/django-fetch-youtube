@@ -18,7 +18,7 @@ def index(request):
     #     data = fetchVideos(t)
     #     if(data==None):
     #         return HttpResponse("None of the supplied API Keys work.")
-    startFetching()
+    # startFetching()
     response = []
     data = YoutubeMetadata.objects.all()
     for i in data:
@@ -41,6 +41,8 @@ def fetchVideos():
     #     print(lol)
     #     time.sleep(3)
     #     lol = lol + 1
+    #     if(lol==5):
+    #         break
     json_data = open('./keys.json')
     secret_keys = json.load(json_data)
 
@@ -77,7 +79,7 @@ def fetchVideos():
             dbRow.save()
         time.sleep(10)
 
-def startFetching():
+def startFetching(request):
     process = Thread(target=fetchVideos)
     process.start()
     return HttpResponse("A background asynchronorous job to fetch videos has been triggered.")
