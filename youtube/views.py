@@ -9,7 +9,8 @@ from django.core.paginator import Paginator
 import time
 from threading import Thread
 
-# This endpoint returns the stored video data in a paginated response
+# This function corresponds to the endpoint /youtube
+# and returns the stored video data in a paginated response.
 # The response is sorted in descending order of published datetime.
 # This endpoint also supports a query parameter to facilitation pagination.
 """
@@ -43,8 +44,7 @@ def index(request):
 
 
 # This is the main function which does the job of fetching videos' information asynchronously
-def fetchVideos():
-
+def fetchVideos(searchQuery):
     # Read keys.json file and parse the keys
     json_data = open('./keys.json')
     secret_keys = json.load(json_data)
@@ -66,7 +66,7 @@ def fetchVideos():
                 'part': 'snippet',
                 'maxResults': 25, # Values must be within the range: [0, 50] as per YouTube Data API design
                 'publishedAfter': '2000-04-04T15:51:12.000Z',
-                'q': 'Game of Thrones',
+                'q': searchQuery, # Use searchQuery supplied as URL Parameter, defaults to "Game of Thrones"
                 'type': 'video',
                 'key': api_key
             }
@@ -91,9 +91,12 @@ def fetchVideos():
 # This function corresponds to the endpoint /youtube/startFetching
 # and triggers a background asynchronous job to fetch videos
 def startFetching(request):
+    # Get searchQuery from URL Parameters, defaults to "Game of Thrones"
+    searchQuery = request.GET.get("searchQuery","Game of Thrones")
+
     # Create a thread to fetch the videos in parallel to other tasks
     # The Thread executes the fetchVideos function which fetches the required videos
-    process = Thread(target=fetchVideos)
+    process = Thread(target=fetchVideos, args=(str(searchQuery),))
     process.start()
     response = {
         "success": True,
