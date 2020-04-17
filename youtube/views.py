@@ -6,62 +6,78 @@ import json
 import requests
 import dateutil.parser
 from django.core.paginator import Paginator
+import time
+from threading import Thread
 
 def index(request):
-
-    t=1
-    data = fetchVideos(t)
-    while('items' not in data):
-        t=t+1
-        data = fetchVideos(t)
-        if(data==None):
-            return HttpResponse("None of the supplied API Keys work.")
-
+    # fetchVideos()
+    # t=1
+    # data = fetchVideos(t)
+    # while('items' not in data):
+    #     t=t+1
+    #     data = fetchVideos(t)
+    #     if(data==None):
+    #         return HttpResponse("None of the supplied API Keys work.")
+    startFetching()
     response = []
-    
-    for i in data['items']:
+    data = YoutubeMetadata.objects.all()
+    for i in data:
         entry = {}
-        entry['title'] = i['snippet']['title']
-        entry['description'] = i['snippet']['description']
-        entry['publishedTimestamp'] = str(i['snippet']['publishedAt'])
-        entry['thumbnailUrl'] = i['snippet']['thumbnails']['default']['url']
+        entry['title'] = i.title
+        entry['description'] = i.description
+        entry['publishedTimestamp'] = str(i.publishTimestamp)
+        entry['thumbnailUrl'] = i.thumbnailUrl
         response.append(entry)
 
-        dbRow = YoutubeMetadata()
-        dbRow.videoId = i['id']['videoId']
-        dbRow.title = entry['title']
-        dbRow.description = entry['description']
-        dbRow.publishTimestamp = str(dateutil.parser.parse(entry['publishedTimestamp']))
-        dbRow.thumbnailUrl = entry['thumbnailUrl']
-        dbRow.save()
-    
-    res = json.dumps(response)
     paginator = Paginator(response,10)
     page = request.GET.get('page')
     finalResponse = paginator.get_page(page)
     template = loader.get_template('youtube/index.html')
     return HttpResponse(template.render({'data': finalResponse}, request))
 
-def fetchVideos(t):
-
+def fetchVideos():
+    # lol=1
+    # while(True):
+    #     print(lol)
+    #     time.sleep(3)
+    #     lol = lol + 1
     json_data = open('./keys.json')
     secret_keys = json.load(json_data)
 
-    if('key' + str(t) in secret_keys['YOUTUBE_DATA_API_KEYS']):
-        api_key = secret_keys['YOUTUBE_DATA_API_KEYS']['key' + str(t)]
-    else:
-        return None
+    while(True):
+        t = 1
+        data = {}
+        while('items' not in data):
+            if('key' + str(t) in secret_keys['YOUTUBE_DATA_API_KEYS']):
+                api_key = secret_keys['YOUTUBE_DATA_API_KEYS']['key' + str(t)]
+            else:
+                break
+            queryArguments = {
+            'order': 'date',
+            'part': 'snippet',
+            'maxResults': 25, # Values must be within the range: [0, 50] as per YouTube Data API design
+            'publishedAfter': '2000-04-04T15:51:12.000Z',
+            'q': 'Game of Thrones',
+            'type': 'video',
+            'key': api_key
+            }
+            url = 'https://content.googleapis.com/youtube/v3/search'
+            r = requests.get(url,params=queryArguments)
+            data = r.json()
+            t = t+1
 
-    queryArguments = {
-    'order': 'date',
-    'part': 'snippet',
-    'maxResults': 25, # Values must be within the range: [0, 50] as per YouTube Data API design
-    'publishedAfter': '2000-04-04T15:51:12.000Z',
-    'q': 'Game of Thrones',
-    'type': 'video',
-    'key': api_key
-    }
-    url = 'https://content.googleapis.com/youtube/v3/search'
-    r = requests.get(url,params=queryArguments)
-    data = r.json()
-    return data
+        for i in data['items']:
+            entry = {}
+            dbRow = YoutubeMetadata()
+            dbRow.videoId = i['id']['videoId']
+            dbRow.title = i['snippet']['title']
+            dbRow.description = i['snippet']['description']
+            dbRow.publishTimestamp = str(i['snippet']['publishedAt'])
+            dbRow.thumbnailUrl = i['snippet']['thumbnails']['default']['url']
+            dbRow.save()
+        time.sleep(10)
+
+def startFetching():
+    process = Thread(target=fetchVideos)
+    process.start()
+    return HttpResponse("A background asynchronorous job to fetch videos has been triggered.")
